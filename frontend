@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DeFi Sentinel MVP - AlgoKit Version</title>
+
+    <!-- AlgoKit / Algorand SDK -->
+    <script src="https://unpkg.com/algosdk/dist/browser/algosdk.min.js"></script>
+</head>
+
+<body>
+
+<center>
+
+<h1>🛡️ DeFi Sentinel MVP</h1>
+<p>Real-time Wallet Overview (Algorand Version)</p>
+
+<table border="1" cellpadding="10" width="700">
+
+    <tr>
+        <th colspan="2">Wallet Information</th>
+    </tr>
+
+    <tr>
+        <td>Wallet Address</td>
+        <td id="walletAddress">Connecting...</td>
+    </tr>
+
+    <tr>
+        <td>Network</td>
+        <td>Algorand Testnet</td>
+    </tr>
+
+    <tr>
+        <th colspan="2">Performance Metrics</th>
+    </tr>
+
+    <tr>
+        <td>Health Factor</td>
+        <td><font color="green"><b id="health">Loading...</b></font></td>
+    </tr>
+
+    <tr>
+        <td>Collateral Value</td>
+        <td id="collateral">$0</td>
+    </tr>
+
+    <tr>
+        <td>Debt Value</td>
+        <td id="debt">$0</td>
+    </tr>
+
+    <tr>
+        <td>Price Change (1h)</td>
+        <td><font color="orange" id="priceChange">Loading...</font></td>
+    </tr>
+
+    <tr>
+        <th colspan="2">Risk Analysis</th>
+    </tr>
+
+    <tr>
+        <td>Risk Level</td>
+        <td><font color="green"><b id="riskLevel">Checking...</b></font></td>
+    </tr>
+
+    <tr>
+        <td>Status Message</td>
+        <td id="status">Connecting to AlgoKit...</td>
+    </tr>
+
+</table>
+
+<br>
+
+<button onclick="connectWallet()">Connect Wallet</button>
+
+</center>
+
+<script>
+
+// AlgoKit connection (Testnet)
+const algodClient = new algosdk.Algodv2(
+    '',
+    'https://testnet-api.algonode.cloud',
+    ''
+);
+
+async function connectWallet() {
+    try {
+
+        // Example wallet (temporary demo address)
+        const wallet = "Y3H5YQ6L2F5H6GZ2L5J2K5J2H5KJ2H5KJ2H5KJ2H5KJ2H5KJ2H5KJ";
+
+        document.getElementById("walletAddress").innerText = wallet;
+
+        // Get account info from Algorand
+        const accountInfo = await algodClient.accountInformation(wallet).do();
+
+        // Example values (you can later replace with DeFi smart-contract values)
+        const balance = accountInfo.amount / 1000000;
+
+        document.getElementById("collateral").innerText = "$" + balance * 10;
+        document.getElementById("debt").innerText = "$" + balance * 6;
+        document.getElementById("health").innerText = "142";
+        document.getElementById("priceChange").innerText = "-2.3%";
+        document.getElementById("riskLevel").innerText = "SAFE ✅";
+        document.getElementById("status").innerText = "Wallet connected successfully";
+
+    } catch (error) {
+        document.getElementById("status").innerText = "Connection failed";
+    }
+}
+
+</script>
+
+</body>
+</html>
