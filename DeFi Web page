@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SentinelDeFi — DeFiPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --surface2:  #1c2333;
+      --border:    #21262d;
+      --teal:      #2dd4bf;
+      --teal-dim:  rgba(45,212,191,.15);
+      --teal-glow: 0 0 20px rgba(45,212,191,.2);
+      --text:      #e6edf3;
+      --muted:     #7d8590;
+      --red:       #f85149;
+      --orange:    #d29922;
+      --green:     #3fb950;
+      --purple:    #a371f7;
+      --r:         10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Sora', sans-serif; font-size: 14px; min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 60px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none; }
+    .logo-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--teal); display: grid; place-items: center;
+    }
+    .logo-icon svg { width: 18px; height: 18px; color: #0d1117; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
+      color: var(--muted); text-decoration: none; border: none; background: none; cursor: pointer;
+      transition: color .15s, background .15s;
+    }
+    .nav-link:hover { color: var(--text); background: var(--surface2); }
+    .nav-link.active { background: var(--teal); color: #0d1117; }
+    .nav-link svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .live-badge { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--green); }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: blink 1.8s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── PAGES ── */
+    .page { display: none; padding: 32px; max-width: 1280px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+    .page-header h1 { font-size: 26px; font-weight: 700; color: var(--text); }
+    .page-header p  { color: var(--muted); margin-top: 4px; font-size: 14px; }
+
+    /* ── BTN ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none; transition: all .15s; font-family: 'Sora', sans-serif;
+    }
+    .btn-teal  { background: var(--teal); color: #0d1117; }
+    .btn-teal:hover { filter: brightness(1.1); box-shadow: var(--teal-glow); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+    .btn svg { width: 15px; height: 15px; }
+
+    /* ── CARD ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+
+    /* ── METRIC CARDS ── */
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 22px; }
+    .metric-top  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .metric-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+    .metric-icon  { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; }
+    .metric-icon.teal   { background: var(--teal-dim); color: var(--teal); }
+    .metric-icon.purple { background: rgba(163,113,247,.12); color: var(--purple); }
+    .metric-icon.red    { background: rgba(248,81,73,.1); color: var(--red); }
+    .metric-icon.blue   { background: rgba(88,166,255,.1); color: #58a6ff; }
+    .metric-icon svg    { width: 17px; height: 17px; }
+    .metric-value { font-size: 30px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .metric-sub   { font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 4px; }
+    .metric-sub svg { width: 12px; height: 12px; }
+
+    /* ── DASHBOARD CHARTS ROW ── */
+    .charts-row { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-bottom: 20px; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .chart-title  { font-size: 15px; font-weight: 600; }
+    .badge-green  { background: rgba(63,185,80,.15); color: var(--green); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    canvas { max-height: 220px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 60px 20px; color: var(--muted); gap: 10px; text-align: center;
+    }
+    .empty-state svg { width: 40px; height: 40px; opacity: .4; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── INSIGHTS STRIP ── */
+    .insights-strip { margin-top: 20px; }
+    .strip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .strip-header span { font-size: 15px; font-weight: 600; }
+    .strip-count  { font-size: 13px; color: var(--muted); }
+    .insights-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .insight-mini { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; }
+    .insight-mini-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .insight-title { font-size: 13px; font-weight: 600; }
+    .sev-badge { padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .sev-high   { background: rgba(248,81,73,.15);   color: var(--red);    }
+    .sev-medium { background: rgba(210,153,34,.15);  color: var(--orange); }
+    .sev-low    { background: rgba(63,185,80,.15);   color: var(--green);  }
+    .token-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+    .token-tag  { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 11px; color: var(--muted); }
+
+    /* ── PORTFOLIO SUMMARY BAR ── */
+    .summary-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 24px; margin-bottom: 20px; display: flex; gap: 40px; }
+    .sum-item label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
+    .sum-item span  { font-size: 22px; font-weight: 700; color: var(--text); }
+
+    /* ── TABLE ── */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 12px 18px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+    td { padding: 14px 18px; font-size: 14px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+    .pos-pnl.pos { color: var(--green); }
+    .pos-pnl.neg { color: var(--red); }
+    .chain-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 12px; color: var(--muted); }
+    .del-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px 8px; border-radius: 4px; }
+    .del-btn:hover { color: var(--red); background: rgba(248,81,73,.1); }
+
+    /* ── ALERTS ── */
+    .alerts-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .alert-stat { border-radius: var(--r); padding: 24px; text-align: center; }
+    .alert-stat.triggered { background: rgba(210,153,34,.08); border: 1px solid rgba(210,153,34,.25); }
+    .alert-stat.active    { background: rgba(63,185,80,.08);  border: 1px solid rgba(63,185,80,.25); }
+    .alert-stat.paused    { background: var(--surface);       border: 1px solid var(--border); }
+    .alert-stat-num { font-size: 34px; font-weight: 700; }
+    .alert-stat.triggered .alert-stat-num { color: var(--orange); }
+    .alert-stat.active    .alert-stat-num { color: var(--green); }
+    .alert-stat.paused    .alert-stat-num { color: var(--muted); }
+    .alert-stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* ── AI INSIGHTS PAGE ── */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+    .filter-btn {
+      padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+      color: var(--muted); font-family: 'Sora', sans-serif; transition: all .15s;
+    }
+    .filter-btn.active { background: var(--teal); color: #0d1117; border-color: var(--teal); }
+    .filter-btn:hover:not(.active) { color: var(--text); border-color: var(--muted); }
+    .insight-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; margin-bottom: 12px; }
+    .insight-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .insight-icon { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; }
+    .insight-icon.risk        { background: rgba(248,81,73,.1);   color: var(--red); }
+    .insight-icon.opportunity { background: rgba(63,185,80,.1);  color: var(--green); }
+    .insight-icon.market      { background: rgba(88,166,255,.1); color: #58a6ff; }
+    .insight-icon.alert       { background: rgba(210,153,34,.1); color: var(--orange); }
+    .insight-icon svg { width: 17px; height: 17px; }
+    .insight-body { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+
+    /* ── MODAL ── */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200; place-items: center; }
+    .overlay.open { display: grid; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; width: 440px; max-width: 95vw; }
+    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 7px; color: var(--text); font-family: 'Sora', sans-serif; font-size: 14px;
+      outline: none; transition: border-color .15s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--teal); }
+    .form-group select option { background: var(--surface); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+
+    /* ── CHAIN DIST ── */
+    #chainChart { max-height: 180px; }
+    .no-pos-chain { display: flex; align-items: center; justify-content: center; height: 180px; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    DeFiPulse
+  </a>
+
+  <div class="nav-links">
+    <button class="nav-link" data-page="dashboard" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-link" data-page="portfolio" onclick="showPage('portfolio')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      Portfolio
+    </button>
+    <button class="nav-link" data-page="alerts" onclick="showPage('alerts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Alerts
+    </button>
+    <button class="nav-link" data-page="ai-insights" onclick="showPage('ai-insights')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      AI Insights
+    </button>
+  </div>
+
+  <div class="live-badge"><div class="live-dot"></div> Live</div>
+</nav>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="page-dashboard" class="page">
+  <div class="page-header">
+    <div>
+      <h1>Ecosystem Dashboard</h1>
+      <p>Real-time DeFi portfolio monitoring</p>
+    </div>
+    <button class="btn btn-teal" onclick="showPage('ai-insights')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      AI Analysis
+    </button>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-top">
+        <span class="metric-label">Portfolio Value</span>
+        <div class="metric-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      </div>
+      <div class="metric-value" id="d-val">$0</div>
+      <div class="metric-sub">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span id="d-pnl-pct">+0% all time</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-top">
+        <span class="metric-label">Total P&L</span>
+        <div class="metric-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+      </div>
+      <div class="metric-value" id="d-pnl">+$0</div>
+      <div class="metric-sub" style="color:var(--muted)">All positions</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-top">
+        <span class="metric-label">Active Alerts</span>
+        <div class="metric-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      </div>
+      <div class="metric-value" id="d-alerts">0</div>
+      <div class="metric-sub" id="d-trig" style="color:var(--muted)">+0% triggered</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-top">
+        <span class="metric-label">Positions</span>
+        <div class="metric-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+      </div>
+      <div class="metric-value" id="d-pos">0</div>
+      <div class="metric-sub" style="color:var(--muted)">Open positions</div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title">Portfolio Value (24h)</span>
+        <span class="badge-green">+3.2% today</span>
+      </div>
+      <canvas id="portfolioChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">Chain Distribution</span></div>
+      <div id="chainDistWrap">
+        <div class="no-pos-chain">No positions yet</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insights-strip">
+    <div class="strip-header">
+      <span>Recent AI Insights</span>
+      <span class="strip-count" id="d-insight-count">3 insights</span>
+    </div>
+    <div class="insights-row" id="d-insights-row"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ PORTFOLIO ═══════════════ -->
+<div id="page-portfolio" class="page">
+  <div class="page-header">
+    <div>
+      <h1>Portfolio</h1>
+      <p>Manage your DeFi positions across protocols</p>
+    </div>
+    <button class="btn btn-teal" onclick="openModal('posModal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Position
+    </button>
+  </div>
+
+  <div class="summary-bar">
+    <div class="sum-item"><label>Total Value</label><span id="p-val">$0</span></div>
+    <div class="sum-item"><label>Positions</label><span id="p-pos">0</span></div>
+    <div class="sum-item"><label>Protocols</label><span id="p-proto">0</span></div>
+  </div>
+
+  <div class="table-wrap" id="p-table-wrap">
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      <p>No positions yet. Add your first DeFi position.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ALERTS ═══════════════ -->
+<div id="page-alerts" class="page">
+  <div class="page-header">
+    <div>
+      <h1>Alerts</h1>
+      <p>Price &amp; liquidity threshold monitoring</p>
+    </div>
+    <button class="btn btn-teal" onclick="openModal('alertModal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Alert
+    </button>
+  </div>
+
+  <div class="alerts-stats">
+    <div class="alert-stat triggered"><div class="alert-stat-num" id="a-triggered">0</div><div class="alert-stat-label">Triggered</div></div>
+    <div class="alert-stat active">   <div class="alert-stat-num" id="a-active">0</div>   <div class="alert-stat-label">Active</div></div>
+    <div class="alert-stat paused">   <div class="alert-stat-num" id="a-paused">0</div>   <div class="alert-stat-label">Paused</div></div>
+  </div>
+
+  <div class="table-wrap" id="a-table-wrap">
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <p>No alerts set. Create your first price or liquidity alert.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ AI INSIGHTS ═══════════════ -->
+<div id="page-ai-insights" class="page">
+  <div class="page-header">
+    <div>
+      <h1>AI Insights</h1>
+      <p>Intelligent analysis powered by AI</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" onclick="markAllRead()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark all read (<span id="ai-unread">3</span>)
+      </button>
+      <button class="btn btn-teal" onclick="generateInsight()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        Generate Insights
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all"         onclick="filterInsights('all',this)">All</button>
+    <button class="filter-btn"        data-filter="risk"        onclick="filterInsights('risk',this)">Risk <span id="fc-risk"></span></button>
+    <button class="filter-btn"        data-filter="opportunity" onclick="filterInsights('opportunity',this)">Opportunity <span id="fc-opp"></span></button>
+    <button class="filter-btn"        data-filter="alert"       onclick="filterInsights('alert',this)">Alert <span id="fc-alert"></span></button>
+    <button class="filter-btn"        data-filter="market"      onclick="filterInsights('market',this)">Market <span id="fc-market"></span></button>
+  </div>
+
+  <div id="ai-list"></div>
+</div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- Add Position Modal -->
+<div class="overlay" id="posModal">
+  <div class="modal">
+    <h2>Add Position</h2>
+    <div class="form-group"><label>Protocol</label><input id="pm-protocol" placeholder="e.g. Uniswap"/></div>
+    <div class="form-group"><label>Chain</label>
+      <select id="pm-chain">
+        <option>Ethereum</option><option>Polygon</option><option>Arbitrum</option><option>Optimism</option><option>Base</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Asset</label><input id="pm-asset" placeholder="e.g. ETH/USDC LP"/></div>
+    <div class="form-group"><label>Amount</label><input id="pm-amount" type="number" placeholder="0.00"/></div>
+    <div class="form-group"><label>Value (USD)</label><input id="pm-value" type="number" placeholder="0.00"/></div>
+    <div class="form-group"><label>P&L (USD)</label><input id="pm-pnl" type="number" placeholder="0.00"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('posModal')">Cancel</button>
+      <button class="btn btn-teal" onclick="addPosition()">Add Position</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Alert Modal -->
+<div class="overlay" id="alertModal">
+  <div class="modal">
+    <h2>New Alert</h2>
+    <div class="form-group"><label>Alert Name</label><input id="am-name" placeholder="e.g. ETH Price Alert"/></div>
+    <div class="form-group"><label>Asset</label><input id="am-asset" placeholder="e.g. ETH"/></div>
+    <div class="form-group"><label>Condition</label>
+      <select id="am-cond"><option value="above">Price goes above</option><option value="below">Price goes below</option><option value="liquidity">Liquidity drops below</option></select>
+    </div>
+    <div class="form-group"><label>Threshold (USD)</label><input id="am-threshold" type="number" placeholder="0.00"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('alertModal')">Cancel</button>
+      <button class="btn btn-teal" onclick="addAlert()">Create Alert</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Page routing ──────────────────────────────────────────────────────────────
+let currentPage = 'dashboard';
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.page === name));
+  document.getElementById('page-' + name).classList.add('active');
+  currentPage = name;
+  if (name === 'dashboard')    loadDashboard();
+  if (name === 'portfolio')    loadPortfolio();
+  if (name === 'alerts')       loadAlerts();
+  if (name === 'ai-insights')  loadInsights('all');
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+let chartInstance = null;
+
+async function loadDashboard() {
+  const d = await fetch('/api/dashboard').then(r => r.json());
+  document.getElementById('d-val').textContent     = '$' + d.portfolio_value.toLocaleString();
+  document.getElementById('d-pnl').textContent     = (d.total_pnl >= 0 ? '+$' : '-$') + Math.abs(d.total_pnl).toLocaleString();
+  document.getElementById('d-alerts').textContent  = d.active_alerts;
+  document.getElementById('d-pos').textContent     = d.positions_count;
+  document.getElementById('d-pnl-pct').textContent = (d.pnl_pct >= 0 ? '+' : '') + d.pnl_pct + '% all time';
+  document.getElementById('d-trig').textContent    = '+' + d.triggered_pct + '% triggered';
+
+  // Chart
+  const labels = d.chart.map(p => p.t);
+  const vals   = d.chart.map(p => p.v);
+  const ctx = document.getElementById('portfolioChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+  const grad = ctx.createLinearGradient(0, 0, 0, 220);
+  grad.addColorStop(0,   'rgba(45,212,191,.25)');
+  grad.addColorStop(1,   'rgba(45,212,191,0)');
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ data: vals, borderColor: '#2dd4bf', backgroundColor: grad, borderWidth: 2, pointRadius: 0, fill: true, tension: 0.4 }] },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#7d8590', font: { size: 11 }, maxTicksLimit: 7 } },
+        y: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#7d8590', font: { size: 11 }, callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+      }
+    }
+  });
+
+  // Chain dist
+  const wrap = document.getElementById('chainDistWrap');
+  if (!d.chain_dist.length) {
+    wrap.innerHTML = '<div class="no-pos-chain">No positions yet</div>';
+  } else {
+    wrap.innerHTML = '<canvas id="chainChart"></canvas>';
+    const colors = ['#2dd4bf','#a371f7','#58a6ff','#3fb950','#f0883e'];
+    new Chart(document.getElementById('chainChart').getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: d.chain_dist.map(c => c.chain), datasets: [{ data: d.chain_dist.map(c => c.value), backgroundColor: colors, borderWidth: 0 }] },
+      options: { plugins: { legend: { position: 'bottom', labels: { color: '#7d8590', font: { size: 12 }, padding: 12 } } }, cutout: '65%' }
+    });
+  }
+
+  // Insights strip
+  const row = document.getElementById('d-insights-row');
+  row.innerHTML = d.recent_insights.map(i => insightMiniHTML(i)).join('');
+  document.getElementById('d-insight-count').textContent = d.recent_insights.length + ' insights';
+}
+
+function insightMiniHTML(i) {
+  const icons = { risk: riskIcon(), opportunity: growIcon(), market: barIcon(), alert: bellIcon() };
+  return `<div class="insight-mini">
+    <div class="insight-mini-top">
+      <div class="insight-icon ${i.type}">${icons[i.type] || riskIcon()}</div>
+      <span class="insight-title">${i.title}</span>
+      <span class="sev-badge sev-${i.severity}">${i.severity}</span>
+    </div>
+    <div class="token-tags">
+      ${i.tokens.map(t => `<span class="token-tag">${t}</span>`).join('')}
+      ${i.protocols.map(p => `<span class="token-tag">${p}</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── Portfolio ─────────────────────────────────────────────────────────────────
+async function loadPortfolio() {
+  const d = await fetch('/api/portfolio').then(r => r.json());
+  document.getElementById('p-val').textContent   = '$' + d.total_value.toLocaleString();
+  document.getElementById('p-pos').textContent   = d.positions;
+  document.getElementById('p-proto').textContent = d.protocols;
+  const wrap = document.getElementById('p-table-wrap');
+  if (!d.items.length) {
+    wrap.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      <p>No positions yet. Add your first DeFi position.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>Protocol</th><th>Chain</th><th>Asset</th><th>Amount</th><th>Value</th><th>P&L</th><th></th></tr></thead>
+    <tbody>${d.items.map(p => `<tr>
+      <td>${p.protocol}</td>
+      <td><span class="chain-pill">${p.chain}</span></td>
+      <td>${p.asset}</td>
+      <td>${p.amount}</td>
+      <td>$${p.value.toLocaleString()}</td>
+      <td class="pos-pnl ${p.pnl >= 0 ? 'pos' : 'neg'}">${p.pnl >= 0 ? '+' : ''}$${p.pnl.toLocaleString()}</td>
+      <td><button class="del-btn" onclick="deletePosition(${p.id})">✕</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+async function addPosition() {
+  await fetch('/api/portfolio', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      protocol: document.getElementById('pm-protocol').value,
+      chain:    document.getElementById('pm-chain').value,
+      asset:    document.getElementById('pm-asset').value,
+      amount:   document.getElementById('pm-amount').value,
+      value:    document.getElementById('pm-value').value,
+      pnl:      document.getElementById('pm-pnl').value,
+    })
+  });
+  closeModal('posModal');
+  ['pm-protocol','pm-asset','pm-amount','pm-value','pm-pnl'].forEach(id => document.getElementById(id).value = '');
+  loadPortfolio();
+}
+
+async function deletePosition(id) {
+  await fetch('/api/portfolio/' + id, { method: 'DELETE' });
+  loadPortfolio();
+}
+
+// ── Alerts ────────────────────────────────────────────────────────────────────
+async function loadAlerts() {
+  const d = await fetch('/api/alerts').then(r => r.json());
+  document.getElementById('a-triggered').textContent = d.triggered;
+  document.getElementById('a-active').textContent    = d.active;
+  document.getElementById('a-paused').textContent    = d.paused;
+  const wrap = document.getElementById('a-table-wrap');
+  if (!d.items.length) {
+    wrap.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <p>No alerts set. Create your first price or liquidity alert.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>Name</th><th>Asset</th><th>Condition</th><th>Threshold</th><th>Status</th><th>Created</th><th></th></tr></thead>
+    <tbody>${d.items.map(a => `<tr>
+      <td>${a.name}</td><td>${a.asset}</td><td>${a.condition}</td>
+      <td>$${a.threshold.toLocaleString()}</td>
+      <td><span class="sev-badge ${a.status === 'active' ? 'sev-low' : a.status === 'triggered' ? 'sev-high' : 'sev-medium'}">${a.status}</span></td>
+      <td style="color:var(--muted)">${a.created_at}</td>
+      <td><button class="del-btn" onclick="deleteAlert(${a.id})">✕</button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+async function addAlert() {
+  await fetch('/api/alerts', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name:      document.getElementById('am-name').value,
+      asset:     document.getElementById('am-asset').value,
+      condition: document.getElementById('am-cond').value,
+      threshold: document.getElementById('am-threshold').value,
+    })
+  });
+  closeModal('alertModal');
+  ['am-name','am-asset','am-threshold'].forEach(id => document.getElementById(id).value = '');
+  loadAlerts();
+}
+
+async function deleteAlert(id) {
+  await fetch('/api/alerts/' + id, { method: 'DELETE' });
+  loadAlerts();
+}
+
+// ── AI Insights ───────────────────────────────────────────────────────────────
+let currentFilter = 'all';
+
+async function loadInsights(filter) {
+  const d = await fetch('/api/insights?type=' + filter).then(r => r.json());
+  document.getElementById('ai-unread').textContent = d.unread;
+  const icons = { risk: riskIcon(), opportunity: growIcon(), market: barIcon(), alert: bellIcon() };
+
+  // filter counts
+  const all = await fetch('/api/insights?type=all').then(r => r.json());
+  const counts = {};
+  all.items.forEach(i => counts[i.type] = (counts[i.type] || 0) + 1);
+  document.getElementById('fc-risk').textContent   = '(' + (counts.risk || 0) + ')';
+  document.getElementById('fc-opp').textContent    = '(' + (counts.opportunity || 0) + ')';
+  document.getElementById('fc-alert').textContent  = '(' + (counts.alert || 0) + ')';
+  document.getElementById('fc-market').textContent = '(' + (counts.market || 0) + ')';
+
+  document.getElementById('ai-list').innerHTML = d.items.map(i => `
+    <div class="insight-card">
+      <div class="insight-card-top">
+        <div class="insight-icon ${i.type}">${icons[i.type] || riskIcon()}</div>
+        <span class="insight-title" style="font-size:15px">${i.title}</span>
+        <span class="sev-badge sev-${i.severity}">${i.severity}</span>
+        ${!i.read ? '<span style="width:7px;height:7px;background:var(--teal);border-radius:50%;display:inline-block;margin-left:auto"></span>' : ''}
+      </div>
+      <p class="insight-body">${i.body}</p>
+      <div class="token-tags">
+        ${i.tokens.map(t => `<span class="token-tag">${t}</span>`).join('')}
+        ${i.protocols.map(p => `<span class="token-tag">${p}</span>`).join('')}
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state"><p>No insights for this category.</p></div>';
+}
+
+function filterInsights(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+  loadInsights(type);
+}
+
+async function generateInsight() {
+  await fetch('/api/insights/generate', { method: 'POST' });
+  loadInsights(currentFilter);
+}
+
+async function markAllRead() {
+  await fetch('/api/insights/read-all', { method: 'POST' });
+  loadInsights(currentFilter);
+}
+
+// ── SVG icons ─────────────────────────────────────────────────────────────────
+function riskIcon()  { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`; }
+function growIcon()  { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`; }
+function barIcon()   { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`; }
+function bellIcon()  { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`; }
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+const initPage = '{{ page }}';
+showPage(initPage);
+</script>
+</body>
+</html>
