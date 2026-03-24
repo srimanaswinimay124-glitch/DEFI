@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DeFi Sentinel MVP</title>
+</head>
+
+<body>
+
+<center>
+
+<h1>🛡️ DeFi Sentinel MVP </h1>
+<p>Real-time Wallet Overview (Static View)</p>
+
+<table border="1" cellpadding="10" width="700">
+
+    <tr>
+        <th colspan="2">Wallet Information</th>
+    </tr>
+
+    <tr>
+        <td>Wallet Address</td>
+        <td>0x1234567890abcdef1234567890abcdef12345678</td>
+    </tr>
+
+    <tr>
+        <td>Network</td>
+        <td>Ethereum</td>
+    </tr>
+
+    <tr>
+        <th colspan="2">Performance Metrics</th>
+    </tr>
+
+    <tr>
+        <td>Health Factor</td>
+        <td><font color="green"><b>142</b></font></td>
+    </tr>
+
+    <tr>
+        <td>Collateral Value</td>
+        <td>$12,500</td>
+    </tr>
+
+    <tr>
+        <td>Debt Value</td>
+        <td>$8,200</td>
+    </tr>
+
+    <tr>
+        <td>Price Change (1h)</td>
+        <td><font color="orange">-2.3%</font></td>
+    </tr>
+
+    <tr>
+        <th colspan="2">Risk Analysis</th>
+    </tr>
+
+    <tr>
+        <td>Risk Level</td>
+        <td><font color="green"><b>SAFE ✅</b></font></td>
+    </tr>
+
+    <tr>
+        <td>Status Message</td>
+        <td>All systems stable. No liquidation risk detected.</td>
+    </tr>
+
+</table>
+
+<br>
+
+<table border="1" cellpadding="10" width="700">
+    <tr>
+        <td align="center">
+            <b>Note:</b> This is a static HTML representation (no live updates).
+        </td>
+    </tr>
+</table>
+
+</center>
+
+</body>
+</html>
